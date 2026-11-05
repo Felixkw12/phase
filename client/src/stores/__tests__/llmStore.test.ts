@@ -137,6 +137,20 @@ describe("llmStore", () => {
     expect(isProfileUsable(profile(), catalog)).toBe(true);
   });
 
+  it("requires a key for Opper like the other hosted providers", () => {
+    const catalog: LlmProviderCatalogEntry[] = [
+      ...CATALOG,
+      { provider: "Opper", value: "Opper", displayName: "Opper", defaultBaseUrl: "https://api.opper.ai/v3/compat", defaultModel: "claude-sonnet-5", requiresApiKey: true, apiKeyUrl: "", models: [] },
+    ];
+    const id = useLlmStore.getState().addProfile({ provider: "Opper", model: "claude-sonnet-5", enabled: true });
+    const profile = () => useLlmStore.getState().profiles.find((p) => p.id === id);
+    expect(profile()?.provider).toBe("Opper");
+    expect(isProfileUsable(profile(), catalog)).toBe(false);
+
+    useLlmStore.getState().updateProfile(id, { apiKey: "op-test" });
+    expect(isProfileUsable(profile(), catalog)).toBe(true);
+  });
+
   it("lets a keyless provider such as a local server be used without a key", () => {
     const id = useLlmStore.getState().addProfile({
       model: "llama3",

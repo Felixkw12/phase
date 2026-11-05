@@ -14,6 +14,7 @@ export type LlmProviderId =
   | "Gemini"
   | "DeepSeek"
   | "OpenRouter"
+  | "Opper"
   | "OpenAiCompatible"
   | "Jev";
 

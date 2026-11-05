@@ -169,6 +169,29 @@ const OPENROUTER_MODELS: &[ModelOption] = &[
     },
 ];
 
+// Opper model ids are bare pool names: a pool is every vendor serving that
+// model, and Opper picks the route per request. `provider/model` pins one
+// route. The ids are a shortlist; anything else Opper serves is reachable
+// through the free-text field.
+const OPPER_MODELS: &[ModelOption] = &[
+    ModelOption {
+        id: "claude-sonnet-5",
+        label: "Claude Sonnet 5",
+    },
+    ModelOption {
+        id: "claude-opus-5",
+        label: "Claude Opus 5",
+    },
+    ModelOption {
+        id: "gemini-2.5-pro",
+        label: "Gemini 2.5 Pro",
+    },
+    ModelOption {
+        id: "deepseek-v4-pro",
+        label: "DeepSeek V4 Pro",
+    },
+];
+
 // Jev ships as an alias that always names TypeSafe's current flagship, so there
 // is nothing to pin.
 const JEV_MODELS: &[ModelOption] = &[ModelOption {
@@ -230,6 +253,16 @@ const CATALOG: &[ProviderCatalogEntry] = &[
         requires_api_key: true,
         api_key_url: "https://openrouter.ai/keys",
         models: OPENROUTER_MODELS,
+    },
+    ProviderCatalogEntry {
+        provider: LlmProvider::Opper,
+        value: "Opper",
+        display_name: "Opper",
+        default_base_url: Some("https://api.opper.ai/v3/compat"),
+        default_model: "claude-sonnet-5",
+        requires_api_key: true,
+        api_key_url: "https://platform.opper.ai",
+        models: OPPER_MODELS,
     },
     ProviderCatalogEntry {
         provider: LlmProvider::OpenAiCompatible,

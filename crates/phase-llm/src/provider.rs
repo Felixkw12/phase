@@ -19,6 +19,10 @@ pub enum LlmProvider {
     /// contract at a fixed root, with vendor-prefixed model ids
     /// (`openai/gpt-5`, `anthropic/claude-sonnet-4.5`, ...).
     OpenRouter,
+    /// Opper's AI gateway. Speaks the OpenAI chat-completions contract at a
+    /// fixed root, with bare pool ids (`claude-sonnet-5`, `deepseek-v4-pro`,
+    /// ...) that Opper routes per request.
+    Opper,
     /// Any third-party endpoint implementing OpenAI's `/chat/completions`
     /// contract (Ollama, LM Studio, vLLM, Together, Groq, ...).
     OpenAiCompatible,
@@ -34,8 +38,8 @@ pub enum LlmProvider {
 /// so an OpenAI-compatible vendor needs no parser of its own.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WireProtocol {
-    /// `POST {base}/chat/completions` — OpenAI, DeepSeek, OpenRouter, and every
-    /// OpenAI-compatible endpoint.
+    /// `POST {base}/chat/completions` — OpenAI, DeepSeek, OpenRouter, Opper, and
+    /// every OpenAI-compatible endpoint.
     OpenAiChat,
     /// `POST {base}/messages` — Anthropic.
     AnthropicMessages,
@@ -57,6 +61,7 @@ pub const ACCEPTED_PROVIDER_LABELS: &[&str] = &[
     "Gemini",
     "DeepSeek",
     "OpenRouter",
+    "Opper",
     "OpenAiCompatible",
     "Jev",
 ];
@@ -82,6 +87,7 @@ impl LlmProvider {
             "gemini" | "google" | "googleai" => LlmProvider::Gemini,
             "deepseek" => LlmProvider::DeepSeek,
             "openrouter" => LlmProvider::OpenRouter,
+            "opper" => LlmProvider::Opper,
             "jev" | "typesafe" | "systemone" => LlmProvider::Jev,
             _ => LlmProvider::OpenAiCompatible,
         }
@@ -95,6 +101,7 @@ impl LlmProvider {
             LlmProvider::Gemini => "Gemini",
             LlmProvider::DeepSeek => "DeepSeek",
             LlmProvider::OpenRouter => "OpenRouter",
+            LlmProvider::Opper => "Opper",
             LlmProvider::OpenAiCompatible => "OpenAiCompatible",
             LlmProvider::Jev => "Jev",
         }
@@ -108,6 +115,7 @@ impl LlmProvider {
             LlmProvider::Gemini => "Google Gemini",
             LlmProvider::DeepSeek => "DeepSeek",
             LlmProvider::OpenRouter => "OpenRouter",
+            LlmProvider::Opper => "Opper",
             LlmProvider::OpenAiCompatible => "OpenAI-compatible endpoint",
             LlmProvider::Jev => "Jev (TypeSafe)",
         }
@@ -118,6 +126,7 @@ impl LlmProvider {
             LlmProvider::OpenAi
             | LlmProvider::DeepSeek
             | LlmProvider::OpenRouter
+            | LlmProvider::Opper
             | LlmProvider::OpenAiCompatible => WireProtocol::OpenAiChat,
             LlmProvider::Anthropic => WireProtocol::AnthropicMessages,
             LlmProvider::Gemini => WireProtocol::GeminiGenerateContent,
@@ -134,6 +143,7 @@ impl LlmProvider {
             LlmProvider::Gemini => Some("https://generativelanguage.googleapis.com/v1beta"),
             LlmProvider::DeepSeek => Some("https://api.deepseek.com/v1"),
             LlmProvider::OpenRouter => Some("https://openrouter.ai/api/v1"),
+            LlmProvider::Opper => Some("https://api.opper.ai/v3/compat"),
             // The relay is a phase-server, which the display layer knows (the
             // multiplayer server the player is connected to), not a vendor.
             LlmProvider::OpenAiCompatible | LlmProvider::Jev => None,
@@ -446,6 +456,19 @@ mod tests {
     }
 
     #[test]
+    fn opper_resolves_to_its_own_provider_and_default_root() {
+        for label in ["Opper", "opper", "OPPER", " opper "] {
+            assert_eq!(LlmProvider::from_label(label), LlmProvider::Opper);
+        }
+        assert_eq!(LlmProvider::Opper.wire(), WireProtocol::OpenAiChat);
+        assert_eq!(
+            LlmProvider::Opper.default_base_url(),
+            Some("https://api.opper.ai/v3/compat")
+        );
+        assert!(LlmProvider::Opper.requires_api_key());
+    }
+
+    #[test]
     fn every_variant_appears_in_the_accepted_labels() {
         // Wildcard-free so a new variant fails to compile here rather than
         // silently escaping the accepted-label list.
@@ -455,6 +478,7 @@ mod tests {
             LlmProvider::Gemini,
             LlmProvider::DeepSeek,
             LlmProvider::OpenRouter,
+            LlmProvider::Opper,
             LlmProvider::OpenAiCompatible,
             LlmProvider::Jev,
         ] {
@@ -464,6 +488,7 @@ mod tests {
                 LlmProvider::Gemini => "Gemini",
                 LlmProvider::DeepSeek => "DeepSeek",
                 LlmProvider::OpenRouter => "OpenRouter",
+                LlmProvider::Opper => "Opper",
                 LlmProvider::OpenAiCompatible => "OpenAiCompatible",
                 LlmProvider::Jev => "Jev",
             };

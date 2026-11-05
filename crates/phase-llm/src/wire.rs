@@ -525,6 +525,7 @@ mod tests {
             LlmProvider::OpenAi,
             LlmProvider::DeepSeek,
             LlmProvider::OpenRouter,
+            LlmProvider::Opper,
         ] {
             let spec = build_chat_request(&config(provider), &prompt()).unwrap();
             assert_eq!(spec.redirect, RedirectPolicy::Follow, "{provider:?}");

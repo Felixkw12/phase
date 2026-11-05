@@ -286,6 +286,8 @@ describe("persisted store hydration", () => {
         { id: "c", provider: "some-self-hosted-thing", model: "m" },
         { id: "d", provider: "OpenRouter", model: "m" },
         { id: "e", provider: "oPeN-rOuTeR", model: "m" },
+        { id: "f", provider: "Opper", model: "m" },
+        { id: "g", provider: "OPPER", model: "m" },
       ],
       seatBindings: {},
       draftEnabled: false,
@@ -304,6 +306,8 @@ describe("persisted store hydration", () => {
       c: "OpenAiCompatible",
       d: "OpenRouter",
       e: "OpenRouter",
+      f: "Opper",
+      g: "Opper",
     });
   });
 
